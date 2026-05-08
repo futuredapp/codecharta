@@ -103,7 +103,10 @@ export class CodeMapArrowService implements OnDestroy {
         const { appSettings, dynamicSettings } = this.state.getValue()
         const curveScale = 100 * appSettings.edgeHeight
 
-        if (arrowTargetNode.attributes?.[dynamicSettings.heightMetric] && arrowOriginNode.attributes?.[dynamicSettings.heightMetric]) {
+        if (
+            arrowTargetNode.attributes?.[dynamicSettings.heightMetric] !== undefined &&
+            arrowOriginNode.attributes?.[dynamicSettings.heightMetric] !== undefined
+        ) {
             const curve = this.createCurve(arrowOriginNode, arrowTargetNode, curveScale)
             const color = ColorConverter.getNumber(appSettings.mapColors[buildingIsOriginNode ? "outgoingEdge" : "incomingEdge"])
             this.highlightBuilding(buildingIsOriginNode ? arrowTargetNode : arrowOriginNode)
@@ -171,8 +174,16 @@ export class CodeMapArrowService implements OnDestroy {
             return
         }
         const { edges } = this.state.getValue().fileSettings
+        const { edgeMetric } = this.state.getValue().dynamicSettings
+        if (edgeMetric === null) {
+            return
+        }
 
         for (const edge of edges) {
+            if (edge.attributes[edgeMetric] === undefined) {
+                continue
+            }
+
             const originNode = this.map.get(edge.fromNodeName)
             // TODO: Maps should only have valid edges. If that's not the case, the
             // internal decoration is likely faulty. Check if only test data is not
