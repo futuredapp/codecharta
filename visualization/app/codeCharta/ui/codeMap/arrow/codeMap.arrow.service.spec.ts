@@ -25,6 +25,7 @@ import { appReducers, setStateMiddleware } from "../../../state/store/state.mana
 import { clone } from "../../../util/clone"
 import { setShowOutgoingEdges } from "../../../state/store/appSettings/showEdges/outgoing/showOutgoingEdges.actions"
 import { setShowIncomingEdges } from "../../../state/store/appSettings/showEdges/incoming/showIncomingEdges.actions"
+import { setEdgeMetric } from "../../../state/store/dynamicSettings/edgeMetric/edgeMetric.actions"
 
 describe("CodeMapArrowService", () => {
     let codeMapArrowService: CodeMapArrowService
@@ -143,7 +144,8 @@ describe("CodeMapArrowService", () => {
 
             store.dispatch(setShowOutgoingEdges({ value: true }))
             store.dispatch(setShowIncomingEdges({ value: false }))
-            store.dispatch(setEdges({ value: [{ fromNodeName: outgoingNode.path, toNodeName: incomingNode.path, attributes: {} }] }))
+            store.dispatch(setEdgeMetric({ value: "selectedEdgeMetric" }))
+            store.dispatch(setEdges({ value: [{ fromNodeName: outgoingNode.path, toNodeName: incomingNode.path, attributes: { selectedEdgeMetric: 1 } }] }))
 
             codeMapArrowService["buildPairingEdges"](nodesMap)
 
@@ -164,12 +166,61 @@ describe("CodeMapArrowService", () => {
 
             store.dispatch(setShowOutgoingEdges({ value: false }))
             store.dispatch(setShowIncomingEdges({ value: true }))
-            store.dispatch(setEdges({ value: [{ fromNodeName: outgoingNode.path, toNodeName: incomingNode.path, attributes: {} }] }))
+            store.dispatch(setEdgeMetric({ value: "selectedEdgeMetric" }))
+            store.dispatch(setEdges({ value: [{ fromNodeName: outgoingNode.path, toNodeName: incomingNode.path, attributes: { selectedEdgeMetric: 1 } }] }))
 
             codeMapArrowService["buildPairingEdges"](nodesMap)
 
             expect(codeMapArrowService.addArrow).toHaveBeenCalledTimes(1)
             expect(codeMapArrowService.addArrow).toHaveBeenCalledWith(outgoingNode, incomingNode, false)
+        })
+
+        it("should only add hover edges for the selected edge metric", () => {
+            withMockedThreeSceneService()
+            codeMapArrowService.addArrow = jest.fn()
+
+            const outgoingNode: Node = OUTGOING_NODE
+            const incomingNode: Node = INCOMING_NODE
+            const differentNode: Node = DIFFERENT_NODE
+            const hoveredNodes = new Map<string, Node>()
+            hoveredNodes.set(outgoingNode.path, outgoingNode)
+            const nodesMap = new Map<string, Node>()
+            nodesMap.set(outgoingNode.path, outgoingNode)
+            nodesMap.set(incomingNode.path, incomingNode)
+            nodesMap.set(differentNode.path, differentNode)
+            codeMapArrowService["map"] = nodesMap
+
+            store.dispatch(setShowOutgoingEdges({ value: true }))
+            store.dispatch(setShowIncomingEdges({ value: false }))
+            store.dispatch(setEdgeMetric({ value: "dependencies" }))
+            store.dispatch(
+                setEdges({
+                    value: [
+                        { fromNodeName: outgoingNode.path, toNodeName: incomingNode.path, attributes: { dependencies: 1 } },
+                        { fromNodeName: outgoingNode.path, toNodeName: differentNode.path, attributes: { temporal_coupling: 1 } }
+                    ]
+                })
+            )
+
+            codeMapArrowService["buildPairingEdges"](hoveredNodes)
+
+            expect(codeMapArrowService.addArrow).toHaveBeenCalledTimes(1)
+            expect(codeMapArrowService.addArrow).toHaveBeenCalledWith(outgoingNode, incomingNode, true)
+        })
+
+        it("should add hover arrows when the selected height metric value is zero", () => {
+            withMockedThreeSceneService()
+            codeMapArrowService["highlightBuilding"] = jest.fn()
+            codeMapArrowService["setCurveColor"] = jest.fn()
+
+            const outgoingNode: Node = { ...OUTGOING_NODE, attributes: { ...OUTGOING_NODE.attributes, mcc: 0 } }
+            const incomingNode: Node = { ...INCOMING_NODE, attributes: { ...INCOMING_NODE.attributes, mcc: 0 } }
+
+            store.dispatch(setHeightMetric({ value: "mcc" }))
+
+            codeMapArrowService.addArrow(outgoingNode, incomingNode, true)
+
+            expect(codeMapArrowService["setCurveColor"]).toHaveBeenCalledTimes(1)
         })
     })
 

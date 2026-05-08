@@ -15,6 +15,7 @@ import { metricDataSelector } from "../../state/selectors/accumulatedData/metric
 import { blacklistMatcherSelector } from "../../state/store/fileSettings/blacklist/blacklistMatcher.selector"
 import { State, Store } from "@ngrx/store"
 import { setColorLabels } from "../../state/store/appSettings/colorLabels/colorLabels.actions"
+import { hoveredNodeIdSelector } from "../../state/store/appStatus/hoveredNodeId/hoveredNodeId.selector"
 
 export interface ColorCategoryCounts {
     positive: number
@@ -46,6 +47,7 @@ export class CodeMapRenderService implements OnDestroy {
         private codeMapMouseEventService: CodeMapMouseEventService
     ) {
         this.subscription = this.store.select(isLoadingFileSelector).pipe(tap(this.onIsLoadingFileChanged)).subscribe()
+        this.threeSceneService.subscribe("onHighlightChanged", this.onHighlightChanged)
     }
 
     ngOnDestroy(): void {
@@ -175,10 +177,53 @@ export class CodeMapRenderService implements OnDestroy {
         }
     }
 
-    private setBuildingLabel(nodes: Node[], highestNodeInSet: number) {
+    private setBuildingLabel(nodes: Node[], highestNodeInSet: number, enforceLabel = false) {
         for (const node of nodes) {
-            this.labelSettingsFacade.addLeafLabel(node, highestNodeInSet)
+            this.labelSettingsFacade.addLeafLabel(node, highestNodeInSet, enforceLabel)
         }
+    }
+
+    private onHighlightChanged = () => {
+        if (hoveredNodeIdSelector(this.state.getValue()) === null) {
+            this.setLabels(this.unflattenedNodes)
+            return
+        }
+
+        if (!this.state.getValue().appSettings.showMetricLabelNodeName) {
+            this.labelSettingsFacade.clearLabels()
+            return
+        }
+
+        const highlightedNodes = this.getHighlightedLeafNodes()
+        this.labelSettingsFacade.clearLabels()
+
+        if (highlightedNodes.length === 0) {
+            return
+        }
+
+        const highestNodeInSet = Math.max(...highlightedNodes.map(node => node.height))
+        this.setBuildingLabel(
+            highlightedNodes.sort((a, b) => b.height - a.height),
+            highestNodeInSet,
+            true
+        )
+    }
+
+    private getHighlightedLeafNodes() {
+        const highlightedNodes: Node[] = []
+        const seenNodeIds = new Set<number>()
+
+        for (const building of this.threeSceneService.getHighlightedBuildings()) {
+            const { node } = building
+            if (!node?.isLeaf || node.flat || !node.visible || seenNodeIds.has(node.id)) {
+                continue
+            }
+
+            seenNodeIds.add(node.id)
+            highlightedNodes.push(node)
+        }
+
+        return highlightedNodes
     }
 
     private setLabels(sortedNodes: Node[]) {
