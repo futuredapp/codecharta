@@ -1,0 +1,101 @@
+name: Release visualization bundle
+
+on:
+  push:
+    tags:
+      - 'fork-v*.*.*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to build (default: current branch)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-bundle-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    name: Build and release visualization bundle
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: visualization/package-lock.json
+
+      - name: Install dependencies
+        working-directory: visualization
+        run: |
+          npm ci || (echo "npm ci failed, regenerating lock file and retrying..." \
+            && npm install --package-lock-only && npm ci)
+
+      - name: Build visualization
+        working-directory: visualization
+        run: npm run build
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Verify build output
+        working-directory: visualization
+        run: |
+          set -euo pipefail
+          test -f dist/bundler/browser/index.html
+          ls -la dist/bundler/browser/ | head -20
+
+      - name: Package bundle
+        id: package
+        run: |
+          set -euo pipefail
+          # Tag-triggered: use the tag name. Dispatch-triggered: use a sha-prefixed name.
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            version="${{ github.ref_name }}"
+          else
+            version="dispatch-$(git rev-parse --short=7 HEAD)"
+          fi
+          archive="codecharta-visualization-${version}.tar.gz"
+          # Tar the contents (not the parent dir) so consumers untar straight into web/public/studio/.
+          tar -C visualization/dist/bundler/browser -czf "${archive}" .
+          ls -la "${archive}"
+          echo "archive=${archive}" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.package.outputs.archive }}
+          name: ${{ steps.package.outputs.version }}
+          tag_name: ${{ steps.package.outputs.version }}
+          body: |
+            Static bundle of the CodeCharta Web Studio (Futured fork patches included).
+
+            Consumed by `futuredapp/codebase-architectures` via `studios.json`.
+
+            ## Install
+            ```bash
+            tar -xzf ${{ steps.package.outputs.archive }} -C path/to/serve
+            ```
+          draft: false
+          prerelease: false
+
+      - name: Upload as workflow artifact (dispatch only)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: codecharta-visualization-${{ steps.package.outputs.version }}
+          path: ${{ steps.package.outputs.archive }}
+          retention-days: 7
