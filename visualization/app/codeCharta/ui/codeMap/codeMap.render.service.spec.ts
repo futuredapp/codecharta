@@ -111,7 +111,8 @@ describe("codeMapRenderService", () => {
             }),
             dispose: jest.fn(),
             forceRerender: jest.fn(),
-            setMapMesh: jest.fn()
+            setMapMesh: jest.fn(),
+            getHighlightedBuildings: jest.fn().mockReturnValue([])
         })()
     }
 
@@ -405,6 +406,53 @@ describe("codeMapRenderService", () => {
 
             // Assert
             expect(labelSettingsFacade.addLeafLabel).toHaveBeenCalledTimes(3)
+        })
+    })
+
+    describe("onHighlightChanged", () => {
+        it("should label every highlighted leaf while hovering", () => {
+            const currentState = state.getValue()
+            jest.spyOn(state, "getValue").mockReturnValue({
+                ...currentState,
+                appStatus: { ...currentState.appStatus, hoveredNodeId: TEST_NODE_ROOT.id }
+            })
+            threeSceneService.getHighlightedBuildings = jest.fn().mockReturnValue([
+                { node: TEST_NODE_ROOT },
+                { node: TEST_NODE_LEAF },
+                { node: TEST_NODE_LEAF },
+                { node: { ...INCOMING_NODE, visible: false } }
+            ])
+
+            codeMapRenderService["onHighlightChanged"]()
+
+            expect(labelSettingsFacade.clearLabels).toHaveBeenCalled()
+            expect(labelSettingsFacade.addLeafLabel).toHaveBeenCalledTimes(2)
+            expect(labelSettingsFacade.addLeafLabel).toHaveBeenCalledWith(TEST_NODE_ROOT, 2, true)
+            expect(labelSettingsFacade.addLeafLabel).toHaveBeenCalledWith(TEST_NODE_LEAF, 2, true)
+        })
+
+        it("should restore configured labels when there is no active hover", () => {
+            codeMapRenderService["unflattenedNodes"] = TEST_NODES
+            codeMapRenderService["setLabels"] = jest.fn()
+
+            codeMapRenderService["onHighlightChanged"]()
+
+            expect(codeMapRenderService["setLabels"]).toHaveBeenCalledWith(TEST_NODES)
+        })
+
+        it("should not show hover labels when node names are disabled", () => {
+            const currentState = state.getValue()
+            jest.spyOn(state, "getValue").mockReturnValue({
+                ...currentState,
+                appSettings: { ...currentState.appSettings, showMetricLabelNodeName: false },
+                appStatus: { ...currentState.appStatus, hoveredNodeId: TEST_NODE_ROOT.id }
+            })
+            threeSceneService.getHighlightedBuildings = jest.fn().mockReturnValue([{ node: TEST_NODE_ROOT }])
+
+            codeMapRenderService["onHighlightChanged"]()
+
+            expect(labelSettingsFacade.clearLabels).toHaveBeenCalled()
+            expect(labelSettingsFacade.addLeafLabel).not.toHaveBeenCalled()
         })
     })
 

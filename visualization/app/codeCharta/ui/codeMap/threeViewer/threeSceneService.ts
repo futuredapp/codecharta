@@ -19,6 +19,7 @@ import { FileExtensionCalculator, NO_EXTENSION } from "../../fileExtensionBar/se
 type BuildingSelectedEvents = {
     onBuildingSelected: (data: { building: CodeMapBuilding }) => void
     onBuildingDeselected: () => void
+    onHighlightChanged: () => void
 }
 
 @Injectable({ providedIn: "root" })
@@ -154,6 +155,7 @@ export class ThreeSceneService implements OnDestroy {
             const constantHighlightedNodes = new Set<number>([...this.constantHighlight.values()].map(({ node }) => node.id))
             this.highlightMaterial(materials, constantHighlightedNodes)
         }
+        this.eventEmitter.emit("onHighlightChanged")
         this.threeRendererService.render()
     }
 
@@ -239,6 +241,7 @@ export class ThreeSceneService implements OnDestroy {
             if (materials) {
                 this.resetMaterial(materials)
             }
+            this.eventEmitter.emit("onHighlightChanged")
         }
     }
 
@@ -347,6 +350,15 @@ export class ThreeSceneService implements OnDestroy {
 
     getHighlightedBuilding() {
         return this.primaryHighlightedBuilding
+    }
+
+    getHighlightedBuildings() {
+        if (!this.mapMesh) {
+            return []
+        }
+
+        const { buildings } = this.mapMesh.getMeshDescription()
+        return [...this.highlightedBuildingIds].map(id => buildings[id]).filter((building): building is CodeMapBuilding => Boolean(building))
     }
 
     dispose() {
