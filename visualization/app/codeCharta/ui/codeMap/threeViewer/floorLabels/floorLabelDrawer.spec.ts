@@ -71,6 +71,7 @@ describe("FloorLabelDrawer", () => {
 
     const mapSize = 500
     const scaling: Vector3 = { x: 1, y: 1, z: 1 } as Vector3
+    const floorLabelDepth = 3
 
     describe("draw", () => {
         it("should draw simple and shortened labels on three levels", () => {
@@ -87,7 +88,7 @@ describe("FloorLabelDrawer", () => {
 
             const canvasContextMock = createCanvasMock()
 
-            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, false)
+            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, floorLabelDepth, false)
             const floorLabelPlanes = floorLabelDrawer.draw()
 
             expect(canvasContextMock.fillText).toHaveBeenCalledTimes(5)
@@ -112,7 +113,7 @@ describe("FloorLabelDrawer", () => {
                 createFakeNode("text_to_be_shortened_to_fit_onto_the_floor", 50, 50, false, 2)
             ]
 
-            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, true)
+            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, floorLabelDepth, true)
             const floorLabelPlanes = floorLabelDrawer.draw()
 
             expect(floorLabelDrawer.folderGeometryHeight).toBe(68)
@@ -135,11 +136,47 @@ describe("FloorLabelDrawer", () => {
 
             const canvasContextMock = createCanvasMock()
 
-            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, false)
+            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, floorLabelDepth, false)
             const floorLabelPlanes = floorLabelDrawer.draw()
 
             expect(canvasContextMock.fillText).toHaveBeenCalledTimes(4)
             expect(floorLabelPlanes.length).toBe(3)
+        })
+
+        it("should draw on configured floor label depth", () => {
+            initMapCanvas()
+
+            const rootNode = createFakeNode("root", 500, 500, false, 0)
+            const nodes = [
+                rootNode,
+                createFakeNode("simpleLabelNode1", 400, 400, false, 1),
+                createFakeNode("simpleLabelNode2", 200, 200, false, 2),
+                createFakeNode("simpleLabelNode3", 50, 50, false, 3)
+            ]
+
+            const canvasContextMock = createCanvasMock()
+
+            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, 4, false)
+            const floorLabelPlanes = floorLabelDrawer.draw()
+
+            expect(canvasContextMock.fillText).toHaveBeenCalledTimes(4)
+            expect(floorLabelPlanes.length).toBe(4)
+        })
+
+        it("should skip configured deep labels when their reserved label lane is too small", () => {
+            initMapCanvas()
+
+            const rootNode = createFakeNode("root", 500, 500, false, 0)
+            const nodes = [rootNode, createFakeNode("coveredLabel", 20, 200, false, 3)]
+
+            const canvasContextMock = createCanvasMock()
+
+            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, 4, false)
+            const floorLabelPlanes = floorLabelDrawer.draw()
+
+            expect(canvasContextMock.fillText).toHaveBeenCalledTimes(1)
+            expect(canvasContextMock.fillText).toHaveBeenCalledWith("root", expect.any(Number), expect.any(Number))
+            expect(floorLabelPlanes.length).toBe(1)
         })
 
         it("should not draw on more levels than needed'", () => {
@@ -154,7 +191,7 @@ describe("FloorLabelDrawer", () => {
 
             const canvasContextMock = createCanvasMock()
 
-            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, false)
+            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, floorLabelDepth, false)
             const floorLabelPlanes = floorLabelDrawer.draw()
 
             expect(canvasContextMock.fillText).toHaveBeenCalledTimes(2)
@@ -173,7 +210,7 @@ describe("FloorLabelDrawer", () => {
                 createFakeNode("unlabeledNode", 100, 100, true, 1)
             ]
 
-            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, false)
+            const floorLabelDrawer = new FloorLabelDrawer(nodes, rootNode, mapSize, scaling, floorLabelDepth, false)
             const floorLabelPlanes = floorLabelDrawer.draw()
 
             const geometryPositions = floorLabelPlanes[0].geometry.attributes.position.array

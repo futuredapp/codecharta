@@ -197,6 +197,7 @@ export class ScenarioApplierService {
                 showMetricLabelNameValue: labelsAndFolders.showMetricLabelNameValue,
                 showMetricLabelNodeName: labelsAndFolders.showMetricLabelNodeName,
                 enableFloorLabels: labelsAndFolders.enableFloorLabels,
+                ...(labelsAndFolders.floorLabelDepth === undefined ? {} : { floorLabelDepth: labelsAndFolders.floorLabelDepth }),
                 colorLabels: labelsAndFolders.colorLabels,
                 labelMode: labelsAndFolders.labelMode,
                 groupLabelCollisions: labelsAndFolders.groupLabelCollisions

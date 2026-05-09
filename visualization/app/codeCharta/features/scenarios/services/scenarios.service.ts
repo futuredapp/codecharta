@@ -189,6 +189,7 @@ export class ScenariosService {
                 showMetricLabelNameValue: state.appSettings.showMetricLabelNameValue,
                 showMetricLabelNodeName: state.appSettings.showMetricLabelNodeName,
                 enableFloorLabels: state.appSettings.enableFloorLabels,
+                floorLabelDepth: state.appSettings.floorLabelDepth,
                 colorLabels: { ...state.appSettings.colorLabels },
                 labelMode: state.appSettings.labelMode,
                 groupLabelCollisions: state.appSettings.groupLabelCollisions,

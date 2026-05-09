@@ -173,6 +173,7 @@ export interface AppSettings {
     groupLabelCollisions: boolean
     isColorMetricLinkedToHeightMetric: boolean
     enableFloorLabels: boolean
+    floorLabelDepth: number
 }
 
 export interface MapColors {

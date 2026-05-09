@@ -37,6 +37,7 @@ export interface LabelsAndFoldersSection {
     readonly showMetricLabelNameValue: boolean
     readonly showMetricLabelNodeName: boolean
     readonly enableFloorLabels: boolean
+    readonly floorLabelDepth?: number
     readonly colorLabels: ColorLabelOptions
     readonly labelMode: LabelMode
     readonly groupLabelCollisions: boolean

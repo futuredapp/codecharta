@@ -2186,6 +2186,7 @@ export const STATE: CcState = {
         isWhiteBackground: false,
         isColorMetricLinkedToHeightMetric: false,
         enableFloorLabels: true,
+        floorLabelDepth: 3,
         mapColors: {
             positive: "#69AE40",
             neutral: "#ddcc00",
@@ -2245,6 +2246,7 @@ export const DEFAULT_STATE: CcState = {
         isWhiteBackground: false,
         isColorMetricLinkedToHeightMetric: false,
         enableFloorLabels: true,
+        floorLabelDepth: 3,
         mapColors: {
             base: "#666666",
             flat: "#AAAAAA",

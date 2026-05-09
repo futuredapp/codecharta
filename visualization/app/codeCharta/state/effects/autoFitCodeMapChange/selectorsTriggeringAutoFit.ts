@@ -5,6 +5,7 @@ import { invertAreaSelector } from "../../store/appSettings/invertArea/invertAre
 import { marginSelector } from "../../store/dynamicSettings/margin/margin.selector"
 import { DefaultProjectorFn, MemoizedSelector } from "@ngrx/store"
 import { enableFloorLabelsSelector } from "../../store/appSettings/enableFloorLabels/enableFloorLabels.selector"
+import { floorLabelDepthSelector } from "../../store/appSettings/floorLabelDepth/floorLabelDepth.selector"
 import { areaMetricSelector } from "../../store/dynamicSettings/areaMetric/areaMetric.selector"
 import { isDeltaStateSelector } from "../../selectors/isDeltaState.selector"
 
@@ -15,6 +16,7 @@ export const selectorsTriggeringAutoFit: MemoizedSelector<any, any, DefaultProje
     invertAreaSelector,
     marginSelector,
     enableFloorLabelsSelector,
+    floorLabelDepthSelector,
     areaMetricSelector,
     isDeltaStateSelector
 ]

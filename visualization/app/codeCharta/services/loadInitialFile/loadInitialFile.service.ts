@@ -60,6 +60,7 @@ import { setScreenshotToClipboardEnabled } from "../../state/store/appSettings/e
 import { setColorLabels } from "../../state/store/appSettings/colorLabels/colorLabels.actions"
 import { setIsColorMetricLinkedToHeightMetricAction } from "../../state/store/appSettings/isHeightAndColorMetricLinked/isColorMetricLinkedToHeightMetric.actions"
 import { setEnableFloorLabels } from "../../state/store/appSettings/enableFloorLabels/enableFloorLabels.actions"
+import { setFloorLabelDepth } from "../../state/store/appSettings/floorLabelDepth/floorLabelDepth.actions"
 import { setLabelMode } from "../../state/store/appSettings/labelMode/labelMode.actions"
 import { setGroupLabelCollisions } from "../../state/store/appSettings/groupLabelCollisions/groupLabelCollisions.actions"
 
@@ -237,7 +238,7 @@ export class LoadInitialFileService {
         return missingDynamicSettings
     }
 
-    private static readonly optionalAppSettingsKeys = new Set(["labelMode", "groupLabelCollisions", "labelSize"])
+    private static readonly optionalAppSettingsKeys = new Set(["labelMode", "groupLabelCollisions", "labelSize", "floorLabelDepth"])
 
     private applyAppSettings(savedAppSettings: AppSettings) {
         const currentAppSettings = (this.state.getValue() as CcState).appSettings
@@ -409,6 +410,9 @@ export class LoadInitialFileService {
                 break
             case "enableFloorLabels":
                 this.store.dispatch(setEnableFloorLabels({ value }))
+                break
+            case "floorLabelDepth":
+                this.store.dispatch(setFloorLabelDepth({ value }))
                 break
             case "labelMode":
                 this.store.dispatch(setLabelMode({ value }))

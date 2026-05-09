@@ -4,6 +4,11 @@ import { Node } from "../../../../codeCharta.model"
 import { CanvasTexture, BackSide, Mesh, MeshBasicMaterial, PlaneGeometry, RepeatWrapping, Vector3 } from "three"
 import { FloorLabelHelper } from "./floorLabelHelper"
 
+const DEFAULT_FLOOR_LABEL_DEPTH = 3
+const MAX_LABEL_PADDING_SHARE = 0.25
+const MIN_CONTENT_WIDTH_AFTER_LABEL_PADDING = 10
+const MIN_DEEP_LABEL_FONT_SIZE = 10
+
 export class FloorLabelDrawer {
     private floorLabelPlanes: Mesh[] = []
     private readonly rootNode: Node
@@ -15,8 +20,15 @@ export class FloorLabelDrawer {
 
     private floorLabelsPerLevel = new Map()
 
-    constructor(nodes: Node[], rootNode: Node, mapSize: number, scaling: Vector3, experimentalFeaturesEnabled: boolean) {
-        this.collectLabelsPerLevel(nodes)
+    constructor(
+        nodes: Node[],
+        rootNode: Node,
+        mapSize: number,
+        scaling: Vector3,
+        floorLabelDepth: number,
+        experimentalFeaturesEnabled: boolean
+    ) {
+        this.collectLabelsPerLevel(nodes, floorLabelDepth)
         this.rootNode = rootNode
         this.mapSize = mapSize
         this.scaling = scaling
@@ -25,9 +37,9 @@ export class FloorLabelDrawer {
             : 2.01
     }
 
-    private collectLabelsPerLevel(nodes: Node[]) {
+    private collectLabelsPerLevel(nodes: Node[], floorLabelDepth: number) {
         for (const node of nodes) {
-            if (FloorLabelHelper.isLabelNode(node)) {
+            if (FloorLabelHelper.isLabelNode(node, floorLabelDepth)) {
                 if (!this.floorLabelsPerLevel.has(node.mapNodeDepth)) {
                     this.floorLabelsPerLevel.set(node.mapNodeDepth, [])
                 }
@@ -45,8 +57,10 @@ export class FloorLabelDrawer {
 
         for (const [floorLevel, floorNodesPerLevel] of this.floorLabelsPerLevel) {
             const { textCanvas, context } = FloorLabelDrawer.createLabelPlaneCanvas(scaledMapWidth, scaledMapHeight)
-            this.writeLabelsOnCanvas(context, floorNodesPerLevel, mapResolutionScaling)
-            this.drawLevelPlaneGeometry(textCanvas, scaledMapWidth, scaledMapHeight, floorLevel, mapResolutionScaling)
+            const writtenLabels = this.writeLabelsOnCanvas(context, floorNodesPerLevel, mapResolutionScaling)
+            if (writtenLabels > 0) {
+                this.drawLevelPlaneGeometry(textCanvas, scaledMapWidth, scaledMapHeight, floorLevel, mapResolutionScaling)
+            }
         }
 
         return this.floorLabelPlanes
@@ -88,22 +102,37 @@ export class FloorLabelDrawer {
 
     private writeLabelsOnCanvas(context: CanvasRenderingContext2D, floorNodesOfCurrentLevel: Node[], mapResolutionScaling: number) {
         const { width: rootNodeWidth, length: rootNodeHeight } = this.rootNode
+        let writtenLabels = 0
 
         for (const floorNode of floorNodesOfCurrentLevel) {
             let fontSize =
                 floorNode.depth === 0 ? Math.max(Math.floor(rootNodeWidth * 0.03), 120) : Math.max(Math.floor(rootNodeWidth * 0.023), 95)
             fontSize = fontSize * mapResolutionScaling
+            const maximumFontSize = FloorLabelDrawer.getMaximumFontSize(floorNode, mapResolutionScaling)
+
+            if (maximumFontSize < MIN_DEEP_LABEL_FONT_SIZE * mapResolutionScaling) {
+                continue
+            }
 
             context.font = `${fontSize}px Arial`
 
-            const textToFill = FloorLabelDrawer.getLabelAndSetContextFont(floorNode, context, mapResolutionScaling, fontSize)
+            const textToFill = FloorLabelDrawer.getLabelAndSetContextFont(
+                floorNode,
+                context,
+                mapResolutionScaling,
+                fontSize,
+                maximumFontSize
+            )
 
             context.fillText(
                 textToFill.labelText,
                 (rootNodeHeight - floorNode.y0 - floorNode.length / 2) * mapResolutionScaling,
                 (floorNode.x0 + floorNode.width) * mapResolutionScaling - textToFill.fontSize / 2
             )
+            writtenLabels++
         }
+
+        return writtenLabels
     }
 
     private drawLevelPlaneGeometry(textCanvas, scaledMapWidth, scaledMapHeight, floorLevel, mapResolutionScaling) {
@@ -147,7 +176,8 @@ export class FloorLabelDrawer {
         labelNode: Node,
         context: CanvasRenderingContext2D,
         mapResolutionScaling: number,
-        fontSize: number
+        fontSize: number,
+        maximumFontSize: number
     ) {
         const labelText = labelNode.name
         const floorWidth = labelNode.length * mapResolutionScaling
@@ -160,16 +190,29 @@ export class FloorLabelDrawer {
             // Font will be to small.
             // So scale text not smaller than 0.5 and shorten it as well
             fontSize = fontSize * 0.5
-            fontSize = Math.floor(Math.min(fontSize, labelNode.width * mapResolutionScaling))
+            fontSize = Math.floor(Math.min(fontSize, maximumFontSize))
             context.font = `${fontSize}px Arial`
             return {
                 labelText: FloorLabelDrawer.getFittingLabelText(context, floorWidth, labelText),
                 fontSize
             }
         }
-        fontSize = Math.floor(Math.min(fontSize * fontScaleFactor, labelNode.width * mapResolutionScaling))
+        fontSize = Math.floor(Math.min(fontSize * fontScaleFactor, maximumFontSize))
         context.font = `${fontSize}px Arial`
         return { labelText, fontSize }
+    }
+
+    private static getMaximumFontSize(labelNode: Node, mapResolutionScaling: number) {
+        if (labelNode.mapNodeDepth < DEFAULT_FLOOR_LABEL_DEPTH) {
+            return labelNode.width * mapResolutionScaling
+        }
+
+        const labelLaneWidth = Math.min(
+            labelNode.width * MAX_LABEL_PADDING_SHARE,
+            Math.max(0, labelNode.width - MIN_CONTENT_WIDTH_AFTER_LABEL_PADDING)
+        )
+
+        return labelLaneWidth * mapResolutionScaling
     }
 
     private static getFontScaleFactor(canvasWidth: number, widthOfText: number) {

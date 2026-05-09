@@ -1,4 +1,4 @@
-import { NodeMetricData, CcState, CodeMapNode, Node, NameDataPair } from "../../../codeCharta.model"
+import { NodeMetricData, CcState, CodeMapNode, Node, NameDataPair, NodeType } from "../../../codeCharta.model"
 import {
     METRIC_DATA,
     TEST_FILE_WITH_PATHS,
@@ -136,6 +136,65 @@ describe("treeMapGenerator", () => {
                 expect(nodesWithFloorLabel.width).not.toEqual(nodes[index].width)
             }
             expect(nodes).toMatchSnapshot()
+        })
+
+        it("should keep small buildings visible when deeper floor labels are enabled", () => {
+            map = {
+                name: "root",
+                type: NodeType.FOLDER,
+                attributes: {},
+                path: "/root",
+                children: [
+                    {
+                        name: "Large.swift",
+                        type: NodeType.FILE,
+                        attributes: { rloc: 1000, mcc: 1 },
+                        path: "/root/Large.swift"
+                    },
+                    {
+                        name: "SmallFeature",
+                        type: NodeType.FOLDER,
+                        attributes: {},
+                        path: "/root/SmallFeature",
+                        children: [
+                            {
+                                name: "Presentation",
+                                type: NodeType.FOLDER,
+                                attributes: {},
+                                path: "/root/SmallFeature/Presentation",
+                                children: [
+                                    {
+                                        name: "Views",
+                                        type: NodeType.FOLDER,
+                                        attributes: {},
+                                        path: "/root/SmallFeature/Presentation/Views",
+                                        children: [
+                                            {
+                                                name: "TinyView.swift",
+                                                type: NodeType.FILE,
+                                                attributes: { rloc: 200, mcc: 1 },
+                                                path: "/root/SmallFeature/Presentation/Views/TinyView.swift"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+            state.appSettings.floorLabelDepth = 8
+            metricData = [
+                { name: "rloc", maxValue: 1000, minValue: 1, values: [1, 1000] },
+                { name: "mcc", maxValue: 1, minValue: 1, values: [1] }
+            ]
+
+            const nodes: Node[] = SquarifiedLayoutGenerator.createTreemapNodes(map, state, metricData, isDeltaState)
+            const tinyView = nodes.find(node => node.path === "/root/SmallFeature/Presentation/Views/TinyView.swift")
+
+            expect(tinyView).toBeDefined()
+            expect(tinyView!.width).toBeGreaterThan(0)
+            expect(tinyView!.length).toBeGreaterThan(0)
         })
     })
 

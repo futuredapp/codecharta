@@ -5,13 +5,21 @@
         [value]="margin$ | async"
         [onChange]="applyDebouncedMargin"
         [min]="1"
-        [max]="100"
+        [max]="1000"
     ></cc-slider>
     <mat-checkbox [checked]="enableFloorLabels$ | async" (change)="setEnableFloorLabel($event)">Enable Floor Labels</mat-checkbox>
+    <cc-slider
+        title="Maximum hierarchy depth that receives floor labels"
+        label="Floor Label Depth"
+        [value]="floorLabelDepth$ | async"
+        [onChange]="applyDebouncedFloorLabelDepth"
+        [min]="1"
+        [max]="8"
+    ></cc-slider>
     <mat-checkbox [checked]="isInvertedArea$ | async" (change)="toggleInvertingArea($event)">Invert Area</mat-checkbox>
 
     <cc-reset-settings-button
-        [settingsKeys]="['dynamicSettings.margin', 'appSettings.invertArea', 'appSettings.enableFloorLabels']"
+        [settingsKeys]="['dynamicSettings.margin', 'appSettings.invertArea', 'appSettings.enableFloorLabels', 'appSettings.floorLabelDepth']"
         tooltip="Reset area metric settings to their defaults"
         label="Reset area metric settings"
     ></cc-reset-settings-button>
