@@ -1,15 +1,14 @@
 import { TestBed } from "@angular/core/testing"
 import { provideMockStore, MockStore } from "@ngrx/store/testing"
+import { firstValueFrom, take } from "rxjs"
 import { CodeMapNode, NodeType } from "../../../codeCharta.model"
 import { accumulatedDataSelector } from "./accumulatedData.selector"
 import { maxFolderDepthSelector } from "./maxFolderDepth.selector"
 
 function getValue() {
-    let value: number | undefined
     maxFolderDepthSelector.release()
     const store = TestBed.inject(MockStore)
-    store.select(maxFolderDepthSelector).subscribe(v => (value = v))
-    return value
+    return firstValueFrom(store.select(maxFolderDepthSelector).pipe(take(1)))
 }
 
 describe("maxFolderDepthSelector", () => {
@@ -19,14 +18,14 @@ describe("maxFolderDepthSelector", () => {
         })
     })
 
-    it("should return undefined when no project is loaded", () => {
+    it("should return undefined when no project is loaded", async () => {
         const store = TestBed.inject(MockStore)
         store.overrideSelector(accumulatedDataSelector, { unifiedMapNode: undefined, unifiedFileMeta: undefined })
 
-        expect(getValue()).toBeUndefined()
+        expect(await getValue()).toBeUndefined()
     })
 
-    it("should return 1 for a root with only leaf children", () => {
+    it("should return 1 for a root with only leaf children", async () => {
         const root: CodeMapNode = {
             name: "root",
             type: NodeType.FOLDER,
@@ -40,10 +39,10 @@ describe("maxFolderDepthSelector", () => {
         const store = TestBed.inject(MockStore)
         store.overrideSelector(accumulatedDataSelector, { unifiedMapNode: root, unifiedFileMeta: undefined })
 
-        expect(getValue()).toBe(1)
+        expect(await getValue()).toBe(1)
     })
 
-    it("should return deepest folder depth + 1 for a nested tree", () => {
+    it("should return deepest folder depth + 1 for a nested tree", async () => {
         const root: CodeMapNode = {
             name: "root",
             type: NodeType.FOLDER,
@@ -72,10 +71,10 @@ describe("maxFolderDepthSelector", () => {
         store.overrideSelector(accumulatedDataSelector, { unifiedMapNode: root, unifiedFileMeta: undefined })
 
         // deepest folder ("deep") is at depth 2 → max = 3
-        expect(getValue()).toBe(3)
+        expect(await getValue()).toBe(3)
     })
 
-    it("should clamp to at least 1 for a root with no children", () => {
+    it("should clamp to at least 1 for a root with no children", async () => {
         const root: CodeMapNode = {
             name: "root",
             type: NodeType.FOLDER,
@@ -86,6 +85,6 @@ describe("maxFolderDepthSelector", () => {
         const store = TestBed.inject(MockStore)
         store.overrideSelector(accumulatedDataSelector, { unifiedMapNode: root, unifiedFileMeta: undefined })
 
-        expect(getValue()).toBe(1)
+        expect(await getValue()).toBe(1)
     })
 })
