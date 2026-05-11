@@ -53,6 +53,7 @@ const testSections: ScenarioSections = {
         showMetricLabelNameValue: true,
         showMetricLabelNodeName: false,
         enableFloorLabels: true,
+        floorLabelDepth: 4,
         colorLabels: { positive: true, negative: false, neutral: false },
         labelMode: LabelMode.Color,
         groupLabelCollisions: true,
@@ -157,6 +158,7 @@ describe("ScenarioApplierService", () => {
             expect(patches[2].fileSettings?.blacklist).toEqual(testSections.filters.blacklist)
             expect(patches[2].dynamicSettings?.focusedNodePath).toEqual(["/root/src"])
             expect(patches[2].appSettings?.amountOfTopLabels).toBe(5)
+            expect(patches[2].appSettings?.floorLabelDepth).toBe(4)
             expect(patches[2].appSettings?.labelMode).toBe(LabelMode.Color)
             expect(patches[2].appSettings?.groupLabelCollisions).toBe(true)
             expect(patches[2].fileSettings?.markedPackages).toEqual(testSections.labelsAndFolders.markedPackages)

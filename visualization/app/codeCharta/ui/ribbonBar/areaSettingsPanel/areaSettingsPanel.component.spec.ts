@@ -15,7 +15,7 @@ describe("AreaSettingsPanelComponent", () => {
         })
     })
 
-    it("should allow for change and resetting of 'margin', 'enable floor label' and 'invert area'", async () => {
+    it("should allow for change and resetting of 'margin', 'enable floor label', 'floor label depth' and 'invert area'", async () => {
         const { fixture } = await render(AreaSettingsPanelComponent)
         const loader = TestbedHarnessEnvironment.loader(fixture)
         const state = TestBed.inject(State)
@@ -23,10 +23,13 @@ describe("AreaSettingsPanelComponent", () => {
 
         const marginInput = await loader.getHarness(MatInputHarness.with({ ancestor: 'cc-slider[label="Margin"]' }))
         await marginInput.setValue(String(initialValues.margin + 1))
+        const floorLabelDepthInput = await loader.getHarness(MatInputHarness.with({ ancestor: 'cc-slider[label="Floor Label Depth"]' }))
+        await floorLabelDepthInput.setValue(String(initialValues.floorLabelDepth + 1))
         await userEvent.click(await screen.findByText("Enable Floor Labels"))
         await userEvent.click(await screen.findByText("Invert Area"))
         const changedValues = extractRelatedValues(state.getValue())
         expect(changedValues.margin).toBe(initialValues.margin + 1)
+        expect(changedValues.floorLabelDepth).toBe(initialValues.floorLabelDepth + 1)
         expect(changedValues.enableFloorLabels).toBe(!initialValues.enableFloorLabels)
         expect(changedValues.invertArea).toBe(!initialValues.invertArea)
 
@@ -39,6 +42,7 @@ describe("AreaSettingsPanelComponent", () => {
         return {
             margin: state.dynamicSettings.margin,
             enableFloorLabels: state.appSettings.enableFloorLabels,
+            floorLabelDepth: state.appSettings.floorLabelDepth,
             invertArea: state.appSettings.invertArea
         }
     }

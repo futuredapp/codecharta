@@ -96,7 +96,7 @@ export class ThreeSceneService implements OnDestroy {
         }
         this.floorLabelPlanes.clear()
 
-        const { layoutAlgorithm, enableFloorLabels } = this.state.getValue().appSettings
+        const { layoutAlgorithm, enableFloorLabels, floorLabelDepth } = this.state.getValue().appSettings
         if (layoutAlgorithm !== LayoutAlgorithm.SquarifiedTreeMap || !enableFloorLabels) {
             return
         }
@@ -114,6 +114,7 @@ export class ThreeSceneService implements OnDestroy {
             rootNode,
             treeMapSize,
             scalingVector,
+            floorLabelDepth,
             experimentalFeaturesEnabled
         )
         const floorLabels = this.floorLabelDrawer.draw()

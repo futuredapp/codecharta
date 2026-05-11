@@ -36,6 +36,8 @@ describe("FloorLabelHelper", () => {
     })
 
     describe("isLabelNode", () => {
+        const floorLabelDepth = 3
+
         function createNode(isLeaf: boolean, mapNodeDepth?: number): Node {
             return {
                 attributes: undefined,
@@ -65,24 +67,31 @@ describe("FloorLabelHelper", () => {
 
         it("should return true for floor label nodes)", () => {
             const nodeLevel0 = createNode(false, 0)
-            expect(FloorLabelHelper.isLabelNode(nodeLevel0)).toBe(true)
+            expect(FloorLabelHelper.isLabelNode(nodeLevel0, floorLabelDepth)).toBe(true)
 
             const nodeLevel1 = createNode(false, 1)
-            expect(FloorLabelHelper.isLabelNode(nodeLevel1)).toBe(true)
+            expect(FloorLabelHelper.isLabelNode(nodeLevel1, floorLabelDepth)).toBe(true)
 
             const nodeLevel2 = createNode(false, 2)
-            expect(FloorLabelHelper.isLabelNode(nodeLevel2)).toBe(true)
+            expect(FloorLabelHelper.isLabelNode(nodeLevel2, floorLabelDepth)).toBe(true)
         })
 
         it("should return false for other nodes)", () => {
             const node1 = createNode(true, 0)
-            expect(FloorLabelHelper.isLabelNode(node1)).toBe(false)
+            expect(FloorLabelHelper.isLabelNode(node1, floorLabelDepth)).toBe(false)
 
             const node2 = createNode(false, 3)
-            expect(FloorLabelHelper.isLabelNode(node2)).toBe(false)
+            expect(FloorLabelHelper.isLabelNode(node2, floorLabelDepth)).toBe(false)
 
             const node3 = createNode(true)
-            expect(FloorLabelHelper.isLabelNode(node3)).toBe(false)
+            expect(FloorLabelHelper.isLabelNode(node3, floorLabelDepth)).toBe(false)
+        })
+
+        it("should respect configured floor label depth", () => {
+            const nodeLevel3 = createNode(false, 3)
+
+            expect(FloorLabelHelper.isLabelNode(nodeLevel3, 3)).toBe(false)
+            expect(FloorLabelHelper.isLabelNode(nodeLevel3, 4)).toBe(true)
         })
     })
 })

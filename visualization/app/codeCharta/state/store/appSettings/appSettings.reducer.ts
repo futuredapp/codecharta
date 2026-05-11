@@ -37,6 +37,7 @@ import {
     isColorMetricLinkedToHeightMetric
 } from "./isHeightAndColorMetricLinked/isColorMetricLinkedToHeightMetric.reducer"
 import { defaultEnableFloorLabels, enableFloorLabels } from "./enableFloorLabels/enableFloorLabels.reducer"
+import { defaultFloorLabelDepth, floorLabelDepth } from "./floorLabelDepth/floorLabelDepth.reducer"
 import { defaultLabelMode, labelMode } from "./labelMode/labelMode.reducer"
 import { defaultGroupLabelCollisions, groupLabelCollisions } from "./groupLabelCollisions/groupLabelCollisions.reducer"
 import { combineReducers } from "@ngrx/store"
@@ -73,6 +74,7 @@ export const appSettings = combineReducers({
     sharpnessMode,
     isColorMetricLinkedToHeightMetric,
     enableFloorLabels,
+    floorLabelDepth,
     labelMode,
     groupLabelCollisions
 })
@@ -107,6 +109,7 @@ export const defaultAppSettings = {
     sharpnessMode: defaultSharpnessMode,
     isColorMetricLinkedToHeightMetric: defaultIsColorMetricLinkedToHeightMetric,
     enableFloorLabels: defaultEnableFloorLabels,
+    floorLabelDepth: defaultFloorLabelDepth,
     labelMode: defaultLabelMode,
     groupLabelCollisions: defaultGroupLabelCollisions
 }

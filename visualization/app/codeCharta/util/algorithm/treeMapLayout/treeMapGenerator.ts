@@ -10,7 +10,9 @@ const DEFAULT_PADDING_FLOOR_LABEL_FROM_LEVEL_1 = 120
 const DEFAULT_PADDING_FLOOR_LABEL_FROM_LEVEL_2 = 95
 const DEFAULT_ROOT_FLOOR_LABEL_SCALING = 0.035
 const DEFAULT_SUB_FLOOR_LABEL_SCALING = 0.028
-export const HIERARCHY_LEVELS_WITH_LABLES_UPPER_BOUNDARY = 3
+const DEFAULT_FLOOR_LABEL_DEPTH = 3
+const MAX_LABEL_PADDING_SHARE = 0.25
+const MIN_CONTENT_WIDTH_AFTER_LABEL_PADDING = 10
 
 export function createTreemapNodes(map: CodeMapNode, state: CcState, metricData: NodeMetricData[], isDeltaState: boolean): Node[] {
     const mapSizeResolutionScaling = getMapResolutionScaleFactor(state.files)
@@ -159,7 +161,7 @@ function scaleRoot(root: Node, scaleLength: number, scaleWidth: number) {
 function getSquarifiedTreeMap(map: CodeMapNode, state: CcState, mapSizeResolutionScaling: number, maxWidth: number): SquarifiedTreeMap {
     const hierarchyNode = hierarchy(map)
     const nodesPerSide = getEstimatedNodesPerSide(hierarchyNode)
-    const { enableFloorLabels, experimentalFeaturesEnabled } = state.appSettings
+    const { enableFloorLabels, experimentalFeaturesEnabled, floorLabelDepth } = state.appSettings
     const { margin } = state.dynamicSettings
     const padding = margin * PADDING_SCALING_FACTOR * mapSizeResolutionScaling
 
@@ -178,11 +180,11 @@ function getSquarifiedTreeMap(map: CodeMapNode, state: CcState, mapSizeResolutio
     hierarchyNode.eachAfter(node => {
         // Precalculate the needed paddings for the floor folder labels to be able to expand the default map size
         // TODO fix estimation, estimation of added label space is inaccurate
-        if (!isLeaf(node) && enableFloorLabels) {
+        if (!isLeaf(node) && enableFloorLabels && node.depth < floorLabelDepth) {
             if (node.depth === 0) {
                 addedLabelSpace += DEFAULT_PADDING_FLOOR_LABEL_FROM_LEVEL_1
             }
-            if (node.depth > 0 && node.depth < HIERARCHY_LEVELS_WITH_LABLES_UPPER_BOUNDARY) {
+            if (node.depth > 0) {
                 addedLabelSpace += DEFAULT_PADDING_FLOOR_LABEL_FROM_LEVEL_2
             }
         }
@@ -209,7 +211,7 @@ function getSquarifiedTreeMap(map: CodeMapNode, state: CcState, mapSizeResolutio
             // TODO This will not work for FixedFolders
             // it seems that depth property is missing in that case
             // so the default padding will be added, which is fine though.
-            if (rootNode && enableFloorLabels) {
+            if (rootNode && enableFloorLabels && node.depth < floorLabelDepth) {
                 // Start the labels at level 1 not 0 because the root folder should not be labeled
                 if (node.depth === 0) {
                     // Add a big padding for the first folder level (the font is bigger than in deeper levels)
@@ -218,8 +220,14 @@ function getSquarifiedTreeMap(map: CodeMapNode, state: CcState, mapSizeResolutio
                         DEFAULT_PADDING_FLOOR_LABEL_FROM_LEVEL_1
                     )
                 }
-                if (node.depth > 0 && node.depth < HIERARCHY_LEVELS_WITH_LABLES_UPPER_BOUNDARY) {
-                    return Math.max((rootNode.x1 - rootNode.x0) * DEFAULT_SUB_FLOOR_LABEL_SCALING, DEFAULT_PADDING_FLOOR_LABEL_FROM_LEVEL_2)
+                if (node.depth > 0) {
+                    const requestedFloorLabelPadding = Math.max(
+                        (rootNode.x1 - rootNode.x0) * DEFAULT_SUB_FLOOR_LABEL_SCALING,
+                        DEFAULT_PADDING_FLOOR_LABEL_FROM_LEVEL_2
+                    )
+                    return node.depth < DEFAULT_FLOOR_LABEL_DEPTH
+                        ? requestedFloorLabelPadding
+                        : getFloorLabelPadding(node, requestedFloorLabelPadding, padding)
                 }
             }
 
@@ -234,6 +242,14 @@ function getSquarifiedTreeMap(map: CodeMapNode, state: CcState, mapSizeResolutio
         height,
         width
     }
+}
+
+function getFloorLabelPadding(node: HierarchyRectangularNode<CodeMapNode>, requestedPadding: number, fallbackPadding: number) {
+    const nodeWidth = node.x1 - node.x0
+    const maxPaddingKeepingContent = Math.max(0, nodeWidth - MIN_CONTENT_WIDTH_AFTER_LABEL_PADDING)
+    const maxLabelPadding = Math.min(maxPaddingKeepingContent, nodeWidth * MAX_LABEL_PADDING_SHARE)
+
+    return Math.min(Math.max(fallbackPadding, Math.min(requestedPadding, maxLabelPadding)), maxPaddingKeepingContent)
 }
 
 function getEstimatedNodesPerSide(hierarchyNode: HierarchyNode<CodeMapNode>) {
