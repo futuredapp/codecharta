@@ -14,7 +14,7 @@
         [value]="floorLabelDepth$ | async"
         [onChange]="applyDebouncedFloorLabelDepth"
         [min]="1"
-        [max]="8"
+        [max]="(maxFloorLabelDepth$ | async) ?? 15"
     ></cc-slider>
     <mat-checkbox [checked]="isInvertedArea$ | async" (change)="toggleInvertingArea($event)">Invert Area</mat-checkbox>
 
