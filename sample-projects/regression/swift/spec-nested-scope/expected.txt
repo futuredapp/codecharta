@@ -1,0 +1,3 @@
+# swift.md: a qualified nested type does not mean an unrelated top-level type
+file Client.swift -> Outer.swift
+leaf Client.swift#Client -> Outer.swift#Inner

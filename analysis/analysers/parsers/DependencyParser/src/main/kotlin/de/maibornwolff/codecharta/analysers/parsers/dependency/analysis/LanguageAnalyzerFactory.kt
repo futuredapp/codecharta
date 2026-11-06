@@ -13,6 +13,7 @@ import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.analyzer
 import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.analyzers.python.PythonAnalyzer
 import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.analyzers.rust.RustAnalyzer
 import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.analyzers.sql.SqlAnalyzer
+import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.analyzers.swift.SwiftAnalyzer
 import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.analyzers.typescript.TypescriptAnalyzer
 import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.analyzers.vue.VueAnalyzer
 import de.maibornwolff.codecharta.analysers.parsers.dependency.analysis.model.FileInfo
@@ -35,6 +36,7 @@ class LanguageAnalyzerFactory {
             SupportedLanguage.RUST -> RustAnalyzer(fileInfo)
             SupportedLanguage.ANGULAR -> AngularTemplateAnalyzer(fileInfo)
             SupportedLanguage.SQL -> SqlAnalyzer(fileInfo)
+            SupportedLanguage.SWIFT -> SwiftAnalyzer(fileInfo)
         }
     }
 }

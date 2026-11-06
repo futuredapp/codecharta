@@ -1,0 +1,5 @@
+# swift.md: an extension retains both its owner and the types its body uses
+file Helpers.swift -> Model.swift
+file Helpers.swift -> Service.swift
+leaf Helpers.swift#Helpers_extension -> Model.swift#Model
+leaf Helpers.swift#Helpers_extension -> Service.swift#Service

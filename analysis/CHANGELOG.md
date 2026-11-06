@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/)
 
 ### Added 🚀
 
+- **Swift dependencies**: `dependencyparser` maps Swift declarations, extensions and type references, with lexical
+  name resolution and imports between conventional Swift Package Manager targets.
 - **Author ownership**: `--author-ownership` on `ccsh analyse` and `gitlogparser repo-scan` adds each person's share of
   each file's lines to the map, under an invented colour and animal name, with co-authors sharing a line equally.
 - **Real author names**: `--with-author-names` writes real names instead of invented ones into author ownership, and warns

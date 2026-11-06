@@ -1,0 +1,3 @@
+# swift.md: an import chooses a SwiftPM target over an unimported namesake
+file Sources/App/Client.swift -> Sources/Core/Model.swift
+leaf Sources/App/Client.swift#Client -> Sources/Core/Model.swift#Model

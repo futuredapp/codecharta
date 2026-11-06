@@ -24,6 +24,7 @@ enum class SupportedLanguage(val displayName: String, private val fileExtensions
     VUE("Vue", listOf(FileExtension.VUE)),
     DELPHI("Delphi", listOf(FileExtension.DELPHI)),
     RUST("Rust", listOf(FileExtension.RUST)),
+    SWIFT("Swift", listOf(FileExtension.SWIFT)),
     ANGULAR("Angular template", listOf(FileExtension.HTML)),
     SQL("SQL", listOf(FileExtension.SQL));
 

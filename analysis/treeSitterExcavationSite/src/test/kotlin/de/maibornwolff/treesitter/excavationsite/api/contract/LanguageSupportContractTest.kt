@@ -309,7 +309,8 @@ class LanguageSupportContractTest {
                     Language.PHP,
                     Language.VUE,
                     Language.ANGULAR,
-                    Language.SQL
+                    Language.SQL,
+                    Language.SWIFT
                 )
         }
     }

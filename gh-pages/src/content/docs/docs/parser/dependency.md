@@ -133,7 +133,12 @@ gzipped; output is gzipped by default.
 
 ## Supported languages
 
-Java, Kotlin, C#, C/C++, Go, Python, PHP, TypeScript, JavaScript, Vue, Delphi, Rust, Angular templates and SQL, with
+Swift support is experimental. It extracts declarations, extensions and explicit type references, resolving
+lexical names, same-module declarations and imports. Conventional Swift Package Manager targets are separate
+modules; other layouts use one module per analysis root. Custom manifest paths, Xcode/Tuist target membership,
+macros and compiler type inference are not evaluated.
+
+Java, Kotlin, C#, C/C++, Go, Python, PHP, TypeScript, JavaScript, Vue, Delphi, Rust, Swift, Angular templates and SQL, with
 the same file extensions as the [Unified Parser](/docs/parser/unified#supported-languages). C files (`.c`, `.h`) are
 read as C++.
 

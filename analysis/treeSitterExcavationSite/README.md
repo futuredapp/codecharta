@@ -123,7 +123,7 @@ println(TreeSitterDependencies.getSupportedLanguages())                        /
 | Go | `.go` | Stable | Stable | Experimental |
 | PHP | `.php` | Stable | Stable | Experimental |
 | Ruby | `.rb` | Stable | Stable | — |
-| Swift | `.swift` | Stable | Stable | — |
+| Swift | `.swift` | Stable | Stable | Experimental |
 | Bash | `.sh`, `.bash` | Stable | Stable | — |
 | C# | `.cs` | Stable | Stable | Experimental |
 | C++ | `.cpp`, `.cc`, `.cxx`, `.hpp`, `.hxx`, `.h` | Stable | Stable | Experimental |

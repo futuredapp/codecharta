@@ -525,6 +525,25 @@ class DependencyParserTest {
         assertThat(output.toString()).isEmpty()
     }
 
+    @Test
+    fun `should write Swift extension dependencies to the dependency lens`(
+        @TempDir tempDir: Path
+    ) {
+        // Arrange
+        tempDir.resolve("Model.swift").writeText("struct Model {}")
+        tempDir.resolve("Service.swift").writeText("protocol Service {}")
+        tempDir.resolve("Helpers.swift").writeText("extension Model { func use(service: Service) {} }")
+
+        // Act
+        val output = runParser(tempDir.toString())
+
+        // Assert
+        assertThat(fileEdgeNames(output)).containsExactlyInAnyOrder(
+            "Helpers.swift" to "Model.swift",
+            "Helpers.swift" to "Service.swift"
+        )
+    }
+
     private fun edgeTargetFolders(output: String, sourceName: String): List<String> {
         val parentNamesById = HashMap<String, String>()
 

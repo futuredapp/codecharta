@@ -1,0 +1,3 @@
+struct Outer {
+    struct Inner {}
+}

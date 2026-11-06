@@ -199,7 +199,13 @@ differ from the namespace levels in the logical layer — which are DependaChart
 
 ## Supported languages
 
-Java, Kotlin, C#, C/C++, Go, Python, PHP, TypeScript, JavaScript, Vue, Delphi, Rust, Angular templates and SQL.
+Java, Kotlin, C#, C/C++, Go, Python, PHP, TypeScript, JavaScript, Vue, Delphi, Rust, Swift, Angular templates and SQL.
+
+Swift resolves nested names, declarations in the same module and explicit imports. Extensions retain their own
+dependencies and a reference to the extended type. Conventional Swift Package Manager targets under `Sources/`
+and `Tests/` are separate modules; other layouts are treated as one module per analysis root. Custom manifest
+paths, Xcode/Tuist target membership, macros and compiler type inference are not evaluated.
+See [Swift name resolution](docs/name-resolution/swift.md) for lookup rules and remaining limitations.
 
 An Angular template (`.html`) depends on each component and directive whose selector matches one of its elements, as
 the Angular compiler matches them by tag, attribute and value, property, two-way and event binding, class and, for a
